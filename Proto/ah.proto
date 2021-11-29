@@ -1,10 +1,19 @@
 syntax = "proto3";
 
-package Proto;
+package proto;
 
-option go_package = "./Proto";
+option go_package = "./proto";
 
 service AuctionHouse {
-    
+    rpc Bid(Offer) returns (Acknowledgement); 
 }
 
+message Offer {
+    int64 amount = 1;
+    string user = 2;
+
+}
+
+message Acknowledgement {
+
+}

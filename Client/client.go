@@ -76,7 +76,7 @@ func register(id string) {
 					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Infolist.Name[i], msg.Infolist.Id[i], msg.Infolist.Amount[i], msg.Infolist.Timeleft[i])
 				}
 			} else if msg.Acknowledgement != nil {
-				log.Printf("Your bid led to %d", msg.Acknowledgement.Acknowledgement)
+				log.Printf("Your bid led to %d", msg.Acknowledgement.Status)
 			}
 		}
 
@@ -84,7 +84,7 @@ func register(id string) {
 }
 
 func bid(id string, amount int64) {
-
+	
 }
 
 func show() {

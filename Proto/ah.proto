@@ -51,4 +51,5 @@ message InfoList {
     repeated int64 id = 1;
     repeated string name = 2;
     repeated int64 timeleft = 3;
+    repeated int64 amount = 4;
 }

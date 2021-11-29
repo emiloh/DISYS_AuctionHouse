@@ -8,14 +8,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
+	
 	"github.com/emiloh/DISYS_AuctionHouse/tree/Auction/Proto"
 	"google.golang.org/grpc"
 )
 
 var id string
 var io *bufio.Reader
-var client proto.AuctionHouseClient
+var client Proto.AuctionHouseClient
 
 func main() {
 	id = os.Args[1]
@@ -31,7 +31,7 @@ func main() {
 
 	defer conn.Close()
 
-	client = proto.NewAuctionHouseClient(conn)
+	client = Proto.NewAuctionHouseClient(conn)
 
 	register(id)
 
@@ -54,7 +54,7 @@ func main() {
 }
 
 func register(id string) {
-	registerRequest := &proto.RegisterRequest{Id: id}
+	registerRequest := &Proto.RegisterRequest{Id: id}
 
 	stream, err := client.Register(context.Background(), registerRequest)
 
@@ -62,16 +62,21 @@ func register(id string) {
 		log.Fatalf("Conenction failed: %v", err)
 	}
 
-	go func(str proto.AuctionHouse_RegisterClient) {
+	go func(str Proto.AuctionHouse_RegisterClient) {
 		for {
 			msg, msgerr := str.Recv()
 			if msgerr != nil {
 				log.Fatalf("Failed to receieve message: %v", msgerr)
 			}
 			if msg.Info != nil {
-				log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Info.name, msg.Info.id, msg.Info.amount, msg.Info.timeleft)
-			} else if msg.InfoList != nil {
-				log.Printf("")
+				log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Info.Name, msg.Info.Id, msg.Info.Amount, msg.Info.Timeleft)
+			} else if msg.Infolist != nil {
+				ids := msg.Infolist.Id
+				
+				for i := 0; i < len(ids); i++ {
+					
+				} 
+				
 			}
 		}
 

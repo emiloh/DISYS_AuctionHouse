@@ -7,12 +7,12 @@ import (
 )
 
 type Connection struct {
-	id string
-	stream proto.AuctionHouse_RegisterServer
-	error chan error
+	id     string
+	stream Proto.AuctionHouse_RegisterServer
+	error  chan error
 }
 type frontendServer struct {
-	proto.UnimplementedAuctionHouseServer
+	Proto.UnimplementedAuctionHouseServer
 	connetions map[string]*Connection
 }
 
@@ -20,27 +20,28 @@ func main() {
 
 }
 
-func (fs *frontendServer) Bid(ctx context.Context, offer *proto.Offer) (*proto.Acknowledgement, error) {
+func (fs *frontendServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Acknowledgement, error) {
 
-	return &proto.Acknowledgement{Status: proto.Acknowledgement_SUCCES}, nil
+	return &Proto.Acknowledgement{Status: Proto.Acknowledgement_SUCCES}, nil
 }
 
-func (fs *frontendServer) Result(ctx context.Context, info *proto.Info) (*proto.Offer, error) {
+func (fs *frontendServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Offer, error) {
 
-	return &proto.Offer{}, nil
+	return &Proto.Offer{}, nil
 }
 
-func (fs *frontendServer) View(ctx context.Context, empty *proto.EmptyRequest) (*proto.InfoList, error) {
+func (fs *frontendServer) View(ctx context.Context, empty *Proto.EmptyRequest) (*Proto.InfoList, error) {
 
-	return &proto.InfoList{}, nil
+	return &Proto.InfoList{}, nil
 }
 
-func (fs *frontendServer) Register(request *proto.RegisterRequest, stream proto.AuctionHouse_RegisterServer) error {
+func (fs *frontendServer) Register(request *Proto.RegisterRequest, stream Proto.AuctionHouse_RegisterServer) error {
 	conn := &Connection{
-		id: request.Id,
+		id:     request.Id,
 		stream: stream,
-		error: make(chan error),
+		error:  make(chan error),
 	}
 	fs.connetions[conn.id] = conn
-	return <- conn.error
+	return <-conn.error
+
 }

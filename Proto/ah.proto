@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package proto;
+package Proto;
 
-option go_package = "./proto";
+option go_package = "./Proto";
 
 service AuctionHouse {
     rpc Bid(Offer) returns (Acknowledgement); 
     rpc Result(Info) returns (Offer);
     rpc View(EmptyRequest) returns (InfoList);
-    rpc Register(RegisterRequest) returns (Response);
+    rpc Register(RegisterRequest) returns (stream Response);
 }
 
 message Offer {
@@ -44,6 +44,7 @@ message Info {
     int64 id = 1;
     string name = 2;
     int64 timeleft = 3;
+    int64 amount = 4;
 }
 
 message InfoList {

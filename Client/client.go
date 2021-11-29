@@ -1,20 +1,38 @@
-package main
+package client
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/emiloh/DISYS_AuctionHouse/tree/Auction/Proto"
+	"google.golang.org/grpc"
 )
 
 var id string
 var io *bufio.Reader
+var client proto.AuctionHouseClient
 
 func main() {
 	id = os.Args[1]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
+
+	//done := make(chan int)
+
+	conn, err := grpc.Dial(":1400", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Could not connect: %v", err)
+	}
+
+	defer conn.Close()
+
+	client = proto.NewAuctionHouseClient(conn)
+
 	register(id)
 
 	for {
@@ -36,7 +54,28 @@ func main() {
 }
 
 func register(id string) {
+	registerRequest := &proto.RegisterRequest{Id: id}
 
+	stream, err := client.Register(context.Background(), registerRequest)
+
+	if err != nil {
+		log.Fatalf("Conenction failed: %v", err)
+	}
+
+	go func(str proto.AuctionHouse_RegisterClient) {
+		for {
+			msg, msgerr := str.Recv()
+			if msgerr != nil {
+				log.Fatalf("Failed to receieve message: %v", msgerr)
+			}
+			if msg.Info != nil {
+				log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Info.name, msg.Info.id, msg.Info.amount, msg.Info.timeleft)
+			} else if msg.InfoList != nil {
+				log.Printf("")
+			}
+		}
+
+	}(stream)
 }
 
 func bid(id string, amount int64) {

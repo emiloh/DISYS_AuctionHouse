@@ -1,4 +1,4 @@
-module github.com/emiloh/DISYS_AuctionHouse
+module github.com/emiloh/DISYS_AuctionHouse/tree/Auction
 
 go 1.17
 

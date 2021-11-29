@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package Proto;
+
+option go_package = "./Proto";
+
+service AuctionHouse {
+    
+}
+

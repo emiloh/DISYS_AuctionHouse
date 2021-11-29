@@ -1,4 +1,4 @@
-package Client
+package main
 
 import (
 	"bufio"
@@ -18,7 +18,7 @@ var io *bufio.Reader
 var client Proto.AuctionHouseClient
 
 func main() {
-	uid ="hey"// os.Args[1]
+	uid = "hah" //os.Args[1]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 

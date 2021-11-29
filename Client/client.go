@@ -68,7 +68,7 @@ func register(id string) {
 			if msgerr != nil {
 				log.Fatalf("Failed to receieve message: %v", msgerr)
 			}
-			if msg.Offer != nil {
+			if msg. != nil {
 				log.Printf("Current offer from %s on %s with id %d is %d with a remaining time of %d seconds", msg.Offer.User, msg.Offer.Name, msg.Offer.Id, msg.Offer.Amount, msg.Offer.Timeleft)
 			} else if msg.Infolist != nil {
 				ids := msg.Infolist.Id
@@ -84,7 +84,7 @@ func register(id string) {
 }
 
 func bid(id string, amount int64) {
-	
+
 }
 
 func show() {

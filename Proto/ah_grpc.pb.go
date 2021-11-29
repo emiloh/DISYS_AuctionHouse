@@ -19,8 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuctionHouseClient interface {
 	Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Acknowledgement, error)
-	Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Offer, error)
-	View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*InfoList, error)
+	Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Details, error)
+	View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*DetailsList, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (AuctionHouse_RegisterClient, error)
 }
 
@@ -41,8 +41,8 @@ func (c *auctionHouseClient) Bid(ctx context.Context, in *Offer, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *auctionHouseClient) Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Offer, error) {
-	out := new(Offer)
+func (c *auctionHouseClient) Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Details, error) {
+	out := new(Details)
 	err := c.cc.Invoke(ctx, "/Proto.AuctionHouse/Result", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (c *auctionHouseClient) Result(ctx context.Context, in *Info, opts ...grpc.
 	return out, nil
 }
 
-func (c *auctionHouseClient) View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*InfoList, error) {
-	out := new(InfoList)
+func (c *auctionHouseClient) View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*DetailsList, error) {
+	out := new(DetailsList)
 	err := c.cc.Invoke(ctx, "/Proto.AuctionHouse/View", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -96,8 +96,8 @@ func (x *auctionHouseRegisterClient) Recv() (*Response, error) {
 // for forward compatibility
 type AuctionHouseServer interface {
 	Bid(context.Context, *Offer) (*Acknowledgement, error)
-	Result(context.Context, *Info) (*Offer, error)
-	View(context.Context, *EmptyRequest) (*InfoList, error)
+	Result(context.Context, *Info) (*Details, error)
+	View(context.Context, *EmptyRequest) (*DetailsList, error)
 	Register(*RegisterRequest, AuctionHouse_RegisterServer) error
 	mustEmbedUnimplementedAuctionHouseServer()
 }
@@ -109,10 +109,10 @@ type UnimplementedAuctionHouseServer struct {
 func (UnimplementedAuctionHouseServer) Bid(context.Context, *Offer) (*Acknowledgement, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
 }
-func (UnimplementedAuctionHouseServer) Result(context.Context, *Info) (*Offer, error) {
+func (UnimplementedAuctionHouseServer) Result(context.Context, *Info) (*Details, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
 }
-func (UnimplementedAuctionHouseServer) View(context.Context, *EmptyRequest) (*InfoList, error) {
+func (UnimplementedAuctionHouseServer) View(context.Context, *EmptyRequest) (*DetailsList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
 }
 func (UnimplementedAuctionHouseServer) Register(*RegisterRequest, AuctionHouse_RegisterServer) error {

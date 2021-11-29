@@ -18,7 +18,7 @@ message Offer {
 }
 
 message Response {
-    optional Offer offer = 1;
+    optional Details details = 1;
     optional Acknowledgement acknowledgement = 2;
     optional DetailsList  detailList = 3;
 }

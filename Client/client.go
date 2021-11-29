@@ -1,4 +1,4 @@
-package client
+package Client
 
 import (
 	"bufio"
@@ -18,13 +18,13 @@ var io *bufio.Reader
 var client Proto.AuctionHouseClient
 
 func main() {
-	uid = os.Args[1]
+	uid ="hey"// os.Args[1]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 
 	//done := make(chan int)
 
-	conn, err := grpc.Dial(":1400", grpc.WithInsecure())
+	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)
 	}

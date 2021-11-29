@@ -11,7 +11,7 @@ func newClock() *LamportClock {
 	}
 	return clock
 }
-
+func main() {}
 // Returns the time of the lamport clock.
 func (clock *LamportClock) now() int64 {
 	return clock.time

@@ -13,12 +13,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-var id string
+var uid string
 var io *bufio.Reader
 var client Proto.AuctionHouseClient
 
 func main() {
-	id = os.Args[1]
+	uid = os.Args[1]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 
@@ -33,19 +33,25 @@ func main() {
 
 	client = Proto.NewAuctionHouseClient(conn)
 
-	register(id)
+	register(uid)
 
 	for {
 		text, _ := io.ReadString('\n')
 		commands := strings.Fields(text)
 		switch commands[0] {
 		case "\\bid":
+			id, _ := strconv.ParseInt(commands[1], 10, 64)
 			amount, _ := strconv.ParseInt(commands[2], 10, 64)
-			bid(commands[1], int64(amount))
+			bid(id, int64(amount))
 		case "\\show":
+			show()
 		case "\\help":
 			help()
+		case "\\result":
+			id, _ := strconv.ParseInt(commands[1], 10, 64)
+			result(id)
 		case "\\leave":
+			break
 		default:
 			fmt.Println("Please use one of the commands. If you are unsure about them, type \\help.")
 		}
@@ -68,12 +74,12 @@ func register(id string) {
 			if msgerr != nil {
 				log.Fatalf("Failed to receieve message: %v", msgerr)
 			}
-			if msg. != nil {
-				log.Printf("Current offer from %s on %s with id %d is %d with a remaining time of %d seconds", msg.Offer.User, msg.Offer.Name, msg.Offer.Id, msg.Offer.Amount, msg.Offer.Timeleft)
-			} else if msg.Infolist != nil {
-				ids := msg.Infolist.Id
+			if msg.Details != nil {
+				log.Printf("Current offer from %s on %s with id %d is %d with a remaining time of %d seconds", msg.Details.User, msg.Details.Name, msg.Details.Id, msg.Details.Amount, msg.Details.Timeleft)
+			} else if msg.DetailList != nil {
+				ids := msg.DetailList.Id
 				for i := 0; i < len(ids); i++ {
-					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Infolist.Name[i], msg.Infolist.Id[i], msg.Infolist.Amount[i], msg.Infolist.Timeleft[i])
+					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.DetailList.Name[i], msg.DetailList.Id[i], msg.DetailList.Amount[i], msg.DetailList.Timeleft[i])
 				}
 			} else if msg.Acknowledgement != nil {
 				log.Printf("Your bid led to %d", msg.Acknowledgement.Status)
@@ -83,12 +89,22 @@ func register(id string) {
 	}(stream)
 }
 
-func bid(id string, amount int64) {
-
+func bid(id int64, amount int64) {
+	offer := &Proto.Offer{
+		Id: id,
+		Amount: amount,
+		User: uid,
+	}
+	client.Bid(context.Background(), offer)
 }
 
 func show() {
+	client.View(context.Background(), &Proto.EmptyRequest{})
+}
 
+func result(id int64) {
+	info := &Proto.Info{Id: id}
+	client.Result(context.Background(), info)
 }
 
 func help() {
@@ -103,18 +119,14 @@ func help() {
 	fmt.Println()
 }
 
-func leave() {
-
-}
-
 func welcome() {
 	fmt.Println("____________________ Auction House ____________________")
 	fmt.Println("											")
-	fmt.Println("Welcome to DISYS Auction House, " + id + "!		")
+	fmt.Println("Welcome to DISYS Auction House, " + uid + "!		")
 	fmt.Println("Here you have the possiblity to bid on different ")
 	fmt.Println("items you may like. To aqquire further assist on ")
 	fmt.Println("the bidding tool cosider using the command \\help.	")
-	fmt.Println("Best of luck and happy bidding, " + id + "!  	   ")
+	fmt.Println("Best of luck and happy bidding, " + uid + "!  	   ")
 	fmt.Println("_______________________________________________________")
 	fmt.Println()
 }

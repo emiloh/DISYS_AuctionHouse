@@ -13,13 +13,15 @@ service AuctionHouse {
 
 message Offer {
     int64 id = 1;
-    int64 amount = 2;
-    string user = 3;
+    string name = 2;
+    int64 amount = 3;
+    string user = 4;
+    int64 timeleft = 5;
 }
 
 message Response {
     optional Offer offer = 1;
-    optional Info Info = 2;
+    optional Acknowledgement acknowledgement = 2;
     optional InfoList  infolist = 3;
 }
 
@@ -42,9 +44,6 @@ message Acknowledgement {
 
 message Info {
     int64 id = 1;
-    string name = 2;
-    int64 timeleft = 3;
-    int64 amount = 4;
 }
 
 message InfoList {

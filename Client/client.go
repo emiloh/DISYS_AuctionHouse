@@ -68,14 +68,14 @@ func register(id string) {
 			if msgerr != nil {
 				log.Fatalf("Failed to receieve message: %v", msgerr)
 			}
-			if msg.Info != nil {
-				log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Info.Name, msg.Info.Id, msg.Info.Amount, msg.Info.Timeleft)
+			if msg.Offer != nil {
+				log.Printf("Current offer from %s on %s with id %d is %d with a remaining time of %d seconds", msg.Offer.User, msg.Offer.Name, msg.Offer.Id, msg.Offer.Amount, msg.Offer.Timeleft)
 			} else if msg.Infolist != nil {
 				ids := msg.Infolist.Id
-				
 				for i := 0; i < len(ids); i++ {
-					
+					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Infolist.Name[i], msg.Infolist.Id[i], msg.Infolist.Amount[i], msg.Infolist.Timeleft[i])
 				} 
+			} else if msg.Acknowledgement != nil {
 				
 			}
 		}

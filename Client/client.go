@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	
+
 	"github.com/emiloh/DISYS_AuctionHouse/tree/Auction/Proto"
 	"google.golang.org/grpc"
 )
@@ -74,9 +74,9 @@ func register(id string) {
 				ids := msg.Infolist.Id
 				for i := 0; i < len(ids); i++ {
 					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.Infolist.Name[i], msg.Infolist.Id[i], msg.Infolist.Amount[i], msg.Infolist.Timeleft[i])
-				} 
+				}
 			} else if msg.Acknowledgement != nil {
-				
+				log.Printf("Your bid led to %d", msg.Acknowledgement.Acknowledgement)
 			}
 		}
 

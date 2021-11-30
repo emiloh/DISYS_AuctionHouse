@@ -7,7 +7,7 @@ option go_package = "./Proto";
 service AuctionHouse {
     rpc Bid(Offer) returns (Acknowledgement); 
     rpc Result(Info) returns (Details);
-    rpc View(EmptyRequest) returns (DetailsList);
+    rpc View(User) returns (DetailsList);
     rpc Register(RegisterRequest) returns (stream Response);
 }
 
@@ -23,8 +23,8 @@ message Response {
     optional DetailsList  detailList = 3;
 }
 
-message EmptyRequest {
-
+message User {
+    string id = 1;
 }
 
 message RegisterRequest {
@@ -42,7 +42,9 @@ message Acknowledgement {
 
 message Info {
     int64 id = 1;
+    string uid = 2;
 }
+
 message Details {
     int64 id = 1;
     string name = 2;
@@ -50,6 +52,7 @@ message Details {
     int64 amount = 4;
     string user = 5;
 }
+
 message DetailsList {
     repeated int64 id = 1;
     repeated string name = 2;

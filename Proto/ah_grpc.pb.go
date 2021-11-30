@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuctionHouseClient interface {
 	Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Acknowledgement, error)
 	Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Details, error)
-	View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*DetailsList, error)
+	View(ctx context.Context, in *User, opts ...grpc.CallOption) (*DetailsList, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (AuctionHouse_RegisterClient, error)
 }
 
@@ -50,7 +50,7 @@ func (c *auctionHouseClient) Result(ctx context.Context, in *Info, opts ...grpc.
 	return out, nil
 }
 
-func (c *auctionHouseClient) View(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*DetailsList, error) {
+func (c *auctionHouseClient) View(ctx context.Context, in *User, opts ...grpc.CallOption) (*DetailsList, error) {
 	out := new(DetailsList)
 	err := c.cc.Invoke(ctx, "/Proto.AuctionHouse/View", in, out, opts...)
 	if err != nil {
@@ -97,7 +97,7 @@ func (x *auctionHouseRegisterClient) Recv() (*Response, error) {
 type AuctionHouseServer interface {
 	Bid(context.Context, *Offer) (*Acknowledgement, error)
 	Result(context.Context, *Info) (*Details, error)
-	View(context.Context, *EmptyRequest) (*DetailsList, error)
+	View(context.Context, *User) (*DetailsList, error)
 	Register(*RegisterRequest, AuctionHouse_RegisterServer) error
 	mustEmbedUnimplementedAuctionHouseServer()
 }
@@ -112,7 +112,7 @@ func (UnimplementedAuctionHouseServer) Bid(context.Context, *Offer) (*Acknowledg
 func (UnimplementedAuctionHouseServer) Result(context.Context, *Info) (*Details, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
 }
-func (UnimplementedAuctionHouseServer) View(context.Context, *EmptyRequest) (*DetailsList, error) {
+func (UnimplementedAuctionHouseServer) View(context.Context, *User) (*DetailsList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
 }
 func (UnimplementedAuctionHouseServer) Register(*RegisterRequest, AuctionHouse_RegisterServer) error {
@@ -168,7 +168,7 @@ func _AuctionHouse_Result_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _AuctionHouse_View_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmptyRequest)
+	in := new(User)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func _AuctionHouse_View_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/Proto.AuctionHouse/View",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionHouseServer).View(ctx, req.(*EmptyRequest))
+		return srv.(AuctionHouseServer).View(ctx, req.(*User))
 	}
 	return interceptor(ctx, in, info, handler)
 }

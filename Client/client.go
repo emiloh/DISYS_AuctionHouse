@@ -24,7 +24,7 @@ func main() {
 
 	//done := make(chan int)
 
-	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
+	conn, err := grpc.Dial(":1400", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)
 	}
@@ -99,11 +99,11 @@ func bid(id int64, amount int64) {
 }
 
 func show() {
-	client.View(context.Background(), &Proto.EmptyRequest{})
+	client.View(context.Background(), &Proto.User{Id: uid})
 }
 
 func result(id int64) {
-	info := &Proto.Info{Id: id}
+	info := &Proto.Info{Id: id, Uid: uid}
 	client.Result(context.Background(), info)
 }
 

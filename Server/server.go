@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
+	"github.com/emiloh/DISYS_AuctionHouse/Proto"
 	"google.golang.org/grpc"
 )
 

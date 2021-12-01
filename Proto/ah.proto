@@ -19,6 +19,7 @@ message Ack {
         FAIL = 0;
         SUCCES = 1;
         EXCEPTION = 2;
+        SOLD = 3;
     }
     Response response = 1;
 }

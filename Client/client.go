@@ -95,7 +95,11 @@ func bid(amount int64) {
 	if err != nil {
 
 	}
-	log.Printf(ack.Response.String())
+	if ack.Response == Proto.Ack_SUCCES {
+		log.Println("Your bid was accepted.")
+	}else {
+		log.Println("Unfortunatly, your bid was not high enough.")
+	}
 }
 
 func result() {

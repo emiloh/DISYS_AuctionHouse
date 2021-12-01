@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
 	"google.golang.org/grpc"
@@ -38,11 +39,40 @@ func main() {
 }
 
 func (fs *frontendServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Ack, error) {
-	//failed := []Proto.AuctionHouseClient
-	for i := 0; i < len(clients) {
-		
+	log.Printf("Sending %s's bid of %d to RMs", offer.User, offer.Amount)
+	succes := 0
+	fails := 0
+	for i := 0; i < len(clients); i++ {
+		var ack *Proto.Ack
+		timeout := time.After(5 * time.Second)
+		ticker := time.NewTicker(500 * time.Millisecond)
+		check:
+		for{
+			select{
+				// Reached five seconds of trying with no luck
+			case <- timeout:
+				log.Printf("RM %d is not responding. Assuming it is dead. Removing it from list over RMs", i)
+				//implement removal
+				break check
+			case <- ticker.C:
+				if ack != nil {
+					if ack.Response == Proto.Ack_SUCCES {
+						succes++
+					}else{
+						fails++
+					}
+					break check
+				}
+				ack, _ = clients[i].Bid(ctx, offer)
+			}
+		}
 	}
-	return &Proto.Ack{Response: Proto.Ack_SUCCES}, nil
+	if succes >= len(clients) / 2 + 1{
+		return &Proto.Ack{Response: Proto.Ack_SUCCES}, nil
+	}else {
+		return &Proto.Ack{Response: Proto.Ack_FAIL}, nil
+	}
+	
 }
 
 func (fs *frontendServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Details, error) {

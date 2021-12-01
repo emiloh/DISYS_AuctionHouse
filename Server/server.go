@@ -2,37 +2,31 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
 	"google.golang.org/grpc"
 )
 
-/*type Item struct {
-	id       int64
-	name     string
-	price    int64
-	user     string
-	timeleft int64
-}*/
-
+var lock sync.Mutex
 var id int64 = 0
 var name string = "Tamagotchi"
 var price int64 = 500
 var user string = ""
-var timeleft int64 = 7000
+var timeleft int64 = 120
+var sold = false
 
 type RMServer struct {
 	Proto.UnimplementedAuctionHouseServer
-	//items       map[int64]*Item
 }
 
 func main() {
 	port := os.Args[1]
-	//items := make(map[int64]*Item)
-	//items = seed(items)
 
 	server := &RMServer{Proto.UnimplementedAuctionHouseServer{}}
 
@@ -41,16 +35,39 @@ func main() {
 	listener, err := net.Listen("tcp", port)
 
 	if err != nil {
-		log.Fatalf("Error creating server: %v", err)
+		log.Fatalf("Failed to listen on port, %s: %v", port, err)
 	}
 
 	Proto.RegisterAuctionHouseServer(grpcServer, server)
 
-	grpcServer.Serve(listener)
+	log.Println("DISYS Auction House is online.")
+	go startCountDown()
+	
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalf("Failed to serve incoming connecitons on listener: %v", err)
+	}
 }
 
 func (rms *RMServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Ack, error) {
-	return &Proto.Ack{}, nil
+	log.Printf("Recieved bid from %s. Checking bid against current bid.", offer.User)
+	if !sold {
+		lock.Lock()
+		defer lock.Unlock()
+
+		if offer.Amount > price {
+			log.Printf("%s's bid was higher than current bid. Accepting bid. Current offer is now %d", offer.User, offer.Amount)
+			price = offer.Amount
+			user = offer.User
+			return &Proto.Ack{Response: Proto.Ack_SUCCES}, nil
+		}else if offer.Amount <= price {
+			log.Printf("%s's bid was too low. Rejecting bid.", offer.User)
+			return &Proto.Ack{Response: Proto.Ack_FAIL}, nil
+		}
+		return &Proto.Ack{Response: Proto.Ack_EXCEPTION}, errors.New("wtf")
+	}else{
+		log.Println("The bidding session is over and the item has been sold.")
+		return &Proto.Ack{Response: Proto.Ack_SOLD}, nil
+	}
 }
 
 func (rms *RMServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Details, error) {
@@ -64,37 +81,31 @@ func (rms *RMServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Detai
 	return details, nil
 }
 
+func startCountDown() {
+	log.Printf("The bidding session for %s has begun!", name)
+	tickerS := time.NewTicker(1 * time.Second)
+	ticker10S := time.NewTicker(10 * time.Second)
+	blocker := make(chan bool)
 
+	go func (){ 
+		for{
+			select{
+			case <- blocker:
+				return
+			case <- ticker10S.C:
+				log.Printf("%d seconds remaining of the auction.", timeleft)
+			case <- tickerS.C:
+				lock.Lock()
+				timeleft--
+				lock.Unlock()
+			}
+		}
+	}()
 
-/*
-func seed(items map[int64]*Item) map[int64]*Item {
-	Item1 := &Item{
-		id:       1,
-		name:     "Damaged shoes",
-		price:    10,
-		user:     "",
-		timeleft: 700,
-	}
-	Item2 := &Item{
-		id:       2,
-		name:     "Tamagotchi",
-		price:    100,
-		user:     "",
-		timeleft: 7000,
-	}
-	Item3 := &Item{
-		id:       3,
-		name:     "Fast bike",
-		price:    500,
-		user:     "",
-		timeleft: 10000,
-	}
-
-	items[1] = Item1
-	items[2] = Item2
-	items[3] = Item3
-
-	return items
+	time.Sleep(120 * time.Second)
+	ticker10S.Stop()
+	tickerS.Stop()
+	sold = true
+	blocker <- true
+	log.Println("The auction has offically ended")
 }
-
-*/

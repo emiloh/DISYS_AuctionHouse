@@ -6,8 +6,6 @@ services:
       dockerfile: ./Server/Dockerfile
     networks:
       - ah
-    ports:
-      - "8000"
     command: :8000
   replica2:
     image: ah-rm
@@ -16,8 +14,6 @@ services:
       dockerfile: ./Server/Dockerfile
     networks:
       - ah
-    ports:
-      - "8001"
     command: :8001
   replica3:
     image: ah-rm
@@ -26,8 +22,6 @@ services:
       dockerfile: ./Server/Dockerfile
     networks:
       - ah
-    ports:
-      - "8002"
     command: :8002
   frontend1:
     image: ah-fe
@@ -37,8 +31,8 @@ services:
     networks:
       - ah
     ports:
-      - "1400"
-    command: :1400 :8000 :8001 :8002
+      - "1400:1400"
+    command: :1400 replica1:8000 replica2:8001 replica3:8002
     depends_on:
       - "replica1" 
       - "replica2" 
@@ -51,8 +45,8 @@ services:
     networks:
       - ah
     ports:
-      - "1401"
-    command: :1401 :8000 :8001 :8002
+      - "1401:1401"
+    command: :1401 replica1:8000 replica2:8001 replica3:8002
     depends_on:
       - replica1 
       - replica2 

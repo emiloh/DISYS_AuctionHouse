@@ -5,43 +5,25 @@ package Proto;
 option go_package = "./Proto";
 
 service AuctionHouse {
-    rpc Bid(Offer) returns (Acknowledgement); 
+    rpc Bid(Offer) returns (Ack); 
     rpc Result(Info) returns (Details);
-    rpc View(User) returns (DetailsList);
-    rpc Register(RegisterRequest) returns (stream Response);
 }
 
 message Offer {
-    int64 id = 1;
     int64 amount = 2;
     string user = 3;
 }
 
-message Response {
-    optional Details details = 1;
-    optional Acknowledgement acknowledgement = 2;
-    optional DetailsList  detailList = 3;
-}
-
-message User {
-    string id = 1;
-}
-
-message RegisterRequest {
-    string id = 1;
-}
-
-message Acknowledgement {
-    enum Status {
+message Ack {
+    enum Response {
         FAIL = 0;
         SUCCES = 1;
         EXCEPTION = 2;
     }
-    Status status = 1;
+    Response response = 1;
 }
 
 message Info {
-    int64 id = 1;
     string uid = 2;
 }
 
@@ -51,12 +33,4 @@ message Details {
     int64 timeleft = 3;
     int64 amount = 4;
     string user = 5;
-}
-
-message DetailsList {
-    repeated int64 id = 1;
-    repeated string name = 2;
-    repeated int64 timeleft = 3;
-    repeated int64 amount = 4;
-    repeated string user = 5;
 }

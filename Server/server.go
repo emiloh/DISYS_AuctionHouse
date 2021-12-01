@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/emiloh/DISYS_AuctionHouse/tree/Auction/Proto"
+	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
 	"google.golang.org/grpc"
 )
 

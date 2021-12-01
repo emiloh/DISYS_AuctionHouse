@@ -18,7 +18,7 @@ var io *bufio.Reader
 var client Proto.AuctionHouseClient
 
 func main() {
-	uid = "hah" //os.Args[1]
+	uid =  os.Args[1]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 
@@ -33,18 +33,15 @@ func main() {
 
 	client = Proto.NewAuctionHouseClient(conn)
 
-	register(uid)
+	//register(uid)
 
 	for {
 		text, _ := io.ReadString('\n')
 		commands := strings.Fields(text)
 		switch commands[0] {
 		case "\\bid":
-			id, _ := strconv.ParseInt(commands[1], 10, 64)
-			amount, _ := strconv.ParseInt(commands[2], 10, 64)
-			bid(id, int64(amount))
-		case "\\show":
-			show()
+			amount, _ := strconv.ParseInt(commands[1], 10, 64)
+			bid(amount)
 		case "\\help":
 			help()
 		case "\\result":
@@ -59,7 +56,7 @@ func main() {
 
 }
 
-func register(id string) {
+/*func register(id string) {
 	registerRequest := &Proto.RegisterRequest{Id: id}
 
 	stream, err := client.Register(context.Background(), registerRequest)
@@ -87,23 +84,18 @@ func register(id string) {
 		}
 
 	}(stream)
-}
+}*/
 
-func bid(id int64, amount int64) {
+func bid(amount int64) {
 	offer := &Proto.Offer{
-		Id: id,
 		Amount: amount,
 		User: uid,
 	}
 	client.Bid(context.Background(), offer)
 }
 
-func show() {
-	client.View(context.Background(), &Proto.User{Id: uid})
-}
-
 func result(id int64) {
-	info := &Proto.Info{Id: id, Uid: uid}
+	info := &Proto.Info{Uid: uid}
 	client.Result(context.Background(), info)
 }
 
@@ -111,7 +103,7 @@ func help() {
 	fmt.Println("____________________ Commands _________________________")
 	fmt.Println("											")
 	fmt.Println("Following commands are available:		")
-	fmt.Println("\\bid <ID> <AMOUNT>    (Bids 'amount' on item with 'id')")
+	fmt.Println("\\bid <AMOUNT>    (Bids 'amount' on the item)")
 	fmt.Println("\\show                 (Lists all items on the auction house)")
 	fmt.Println("\\help                 (Lists the available commands)")
 	fmt.Println("\\leave                (Leaves the auction house)")

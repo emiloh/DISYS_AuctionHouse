@@ -18,10 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuctionHouseClient interface {
-	Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Acknowledgement, error)
+	Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Ack, error)
 	Result(ctx context.Context, in *Info, opts ...grpc.CallOption) (*Details, error)
-	View(ctx context.Context, in *User, opts ...grpc.CallOption) (*DetailsList, error)
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (AuctionHouse_RegisterClient, error)
 }
 
 type auctionHouseClient struct {
@@ -32,8 +30,8 @@ func NewAuctionHouseClient(cc grpc.ClientConnInterface) AuctionHouseClient {
 	return &auctionHouseClient{cc}
 }
 
-func (c *auctionHouseClient) Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Acknowledgement, error) {
-	out := new(Acknowledgement)
+func (c *auctionHouseClient) Bid(ctx context.Context, in *Offer, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
 	err := c.cc.Invoke(ctx, "/Proto.AuctionHouse/Bid", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,55 +48,12 @@ func (c *auctionHouseClient) Result(ctx context.Context, in *Info, opts ...grpc.
 	return out, nil
 }
 
-func (c *auctionHouseClient) View(ctx context.Context, in *User, opts ...grpc.CallOption) (*DetailsList, error) {
-	out := new(DetailsList)
-	err := c.cc.Invoke(ctx, "/Proto.AuctionHouse/View", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *auctionHouseClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (AuctionHouse_RegisterClient, error) {
-	stream, err := c.cc.NewStream(ctx, &AuctionHouse_ServiceDesc.Streams[0], "/Proto.AuctionHouse/Register", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &auctionHouseRegisterClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type AuctionHouse_RegisterClient interface {
-	Recv() (*Response, error)
-	grpc.ClientStream
-}
-
-type auctionHouseRegisterClient struct {
-	grpc.ClientStream
-}
-
-func (x *auctionHouseRegisterClient) Recv() (*Response, error) {
-	m := new(Response)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // AuctionHouseServer is the server API for AuctionHouse service.
 // All implementations must embed UnimplementedAuctionHouseServer
 // for forward compatibility
 type AuctionHouseServer interface {
-	Bid(context.Context, *Offer) (*Acknowledgement, error)
+	Bid(context.Context, *Offer) (*Ack, error)
 	Result(context.Context, *Info) (*Details, error)
-	View(context.Context, *User) (*DetailsList, error)
-	Register(*RegisterRequest, AuctionHouse_RegisterServer) error
 	mustEmbedUnimplementedAuctionHouseServer()
 }
 
@@ -106,17 +61,11 @@ type AuctionHouseServer interface {
 type UnimplementedAuctionHouseServer struct {
 }
 
-func (UnimplementedAuctionHouseServer) Bid(context.Context, *Offer) (*Acknowledgement, error) {
+func (UnimplementedAuctionHouseServer) Bid(context.Context, *Offer) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
 }
 func (UnimplementedAuctionHouseServer) Result(context.Context, *Info) (*Details, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
-}
-func (UnimplementedAuctionHouseServer) View(context.Context, *User) (*DetailsList, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
-}
-func (UnimplementedAuctionHouseServer) Register(*RegisterRequest, AuctionHouse_RegisterServer) error {
-	return status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedAuctionHouseServer) mustEmbedUnimplementedAuctionHouseServer() {}
 
@@ -167,45 +116,6 @@ func _AuctionHouse_Result_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuctionHouse_View_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(User)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuctionHouseServer).View(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Proto.AuctionHouse/View",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionHouseServer).View(ctx, req.(*User))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AuctionHouse_Register_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(RegisterRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(AuctionHouseServer).Register(m, &auctionHouseRegisterServer{stream})
-}
-
-type AuctionHouse_RegisterServer interface {
-	Send(*Response) error
-	grpc.ServerStream
-}
-
-type auctionHouseRegisterServer struct {
-	grpc.ServerStream
-}
-
-func (x *auctionHouseRegisterServer) Send(m *Response) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 // AuctionHouse_ServiceDesc is the grpc.ServiceDesc for AuctionHouse service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -221,17 +131,7 @@ var AuctionHouse_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Result",
 			Handler:    _AuctionHouse_Result_Handler,
 		},
-		{
-			MethodName: "View",
-			Handler:    _AuctionHouse_View_Handler,
-		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "Register",
-			Handler:       _AuctionHouse_Register_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/ah.proto",
 }

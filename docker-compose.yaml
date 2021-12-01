@@ -1,0 +1,50 @@
+services:
+  replica1:
+    image: ah-rm
+    build:
+      context: .
+      dockerfile: ./Server/Dockerfile
+    networks:
+      - ah
+    ports:
+      - "8000"
+  replica2:
+    image: ah-rm
+    build:
+      context: .
+      dockerfile: ./Server/Dockerfile
+    networks:
+      - ah
+    ports:
+      - "8001"
+  replica3:
+    image: ah-rm
+    build:
+      context: .
+      dockerfile: ./Server/Dockerfile
+    networks:
+      - ah
+    ports:
+      - "8002"
+  frontend1:
+    image: ah-fe
+    build:
+      context: .
+      dockerfile: ./Server/Dockerfile
+    networks:
+      - ah
+    ports:
+      - "1400"
+    command: :8000 :8001 :8002
+  frontend2:
+    image: ah-fe
+    build:
+      context: .
+      dockerfile: ./Server/Dockerfile
+    networks:
+      - ah
+    ports:
+      - "1401"
+    command: :8000 :8001 :8002
+networks:
+  ah: {}

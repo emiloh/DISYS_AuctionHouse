@@ -1,2 +1,2 @@
-proto:
-	protoc --proto_path=./ --go_out=./ --go-grpc_out=./ proto/proto.proto
+genproto:
+	protoc --proto_path=./ --go_out=./ --go-grpc_out=./ proto/ah.proto

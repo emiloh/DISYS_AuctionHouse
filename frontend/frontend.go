@@ -4,45 +4,29 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
 	"google.golang.org/grpc"
 )
 
-type Connection struct {
-	id     string
-	stream Proto.AuctionHouse_RegisterServer
-	error  chan error
-}
 type frontendServer struct {
 	Proto.UnimplementedAuctionHouseServer
-	connetions map[string]*Connection
 }
 
 var clients []Proto.AuctionHouseClient
-var streams []Proto.AuctionHouse_RegisterClient
-var feid string 
 
 func main() {
-	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Could not connect: %v", err)
-	}
+	listenPort := os.Args[1]
+	ports := []string{os.Args[2], os.Args[3], os.Args[4]}
 
-	defer conn.Close()
+	go connectToRMs(ports)
 
-	clients = append(clients, Proto.NewAuctionHouseClient(conn))
-
-	register("0");
-
-
-	connections := make(map[string]*Connection)
-
-	server := &frontendServer{Proto.UnimplementedAuctionHouseServer{}, connections}
+	server := &frontendServer{Proto.UnimplementedAuctionHouseServer{}}
 
 	grpcServer := grpc.NewServer()
 
-	listener, err := net.Listen("tcp", ":1400")
+	listener, err := net.Listen("tcp", listenPort)
 
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
@@ -53,44 +37,28 @@ func main() {
 	grpcServer.Serve(listener)
 }
 
-func (fs *frontendServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Acknowledgement, error) {
-
-	return &Proto.Acknowledgement{Status: Proto.Acknowledgement_SUCCES}, nil
+func (fs *frontendServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Ack, error) {
+	//failed := []Proto.AuctionHouseClient
+	for i := 0; i < len(clients) {
+		
+	}
+	return &Proto.Ack{Response: Proto.Ack_SUCCES}, nil
 }
 
 func (fs *frontendServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Details, error) {
-
-	return &Proto.Details{}, nil
+	details, err := clients[0].Result(ctx, info)
+	return details, err
 }
 
-func (fs *frontendServer) View(ctx context.Context, user *Proto.User) (*Proto.DetailsList, error) {
-	clients[0].View(context.Background(), &Proto.User{})
-	msg, err := streams[0].Recv()
-	if err != nil {}
-	fs.connetions["hah"].stream.Send(msg)
-	detailsList := msg.DetailList
-	
-	return detailsList, nil
-}
-
-func (fs *frontendServer) Register(request *Proto.RegisterRequest, stream Proto.AuctionHouse_RegisterServer) error {
-	conn := &Connection{
-		id:     request.Id,
-		stream: stream,
-		error:  make(chan error),
+func connectToRMs(ports []string){
+	blocker := make(chan int)
+	for i :=0; i < len(ports); i++ {
+		conn, err := grpc.Dial(ports[i], grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("Could not connect: %v", err)
+		}
+		defer conn.Close()
+		clients = append(clients, Proto.NewAuctionHouseClient(conn))
 	}
-	fs.connetions[conn.id] = conn
-	return <-conn.error
-
-}
-
-
-func register(id string)  {
-	registerRequest := &Proto.RegisterRequest{Id: id}
-
-	stream, err := clients[0].Register(context.Background(), registerRequest)
-	
-	if err != nil {}
-
-	streams = append(streams, stream)
+	<- blocker
 }

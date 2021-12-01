@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emiloh/DISYS_AuctionHouse/tree/Auction/Proto"
+	"github.com/emiloh/DISYS_AuctionHouse/tree/simpler/Proto"
 	"google.golang.org/grpc"
 )
 
@@ -19,12 +19,13 @@ var client Proto.AuctionHouseClient
 
 func main() {
 	uid =  os.Args[1]
+	dialPort := os.Args[2]
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 
 	//done := make(chan int)
 
-	conn, err := grpc.Dial(":1400", grpc.WithInsecure())
+	conn, err := grpc.Dial(dialPort, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)
 	}
@@ -45,8 +46,7 @@ func main() {
 		case "\\help":
 			help()
 		case "\\result":
-			id, _ := strconv.ParseInt(commands[1], 10, 64)
-			result(id)
+			result()
 		case "\\leave":
 			break
 		default:
@@ -91,12 +91,20 @@ func bid(amount int64) {
 		Amount: amount,
 		User: uid,
 	}
-	client.Bid(context.Background(), offer)
+	ack, err := client.Bid(context.Background(), offer)
+	if err != nil {
+
+	}
+	log.Printf(ack.Response.String())
 }
 
-func result(id int64) {
+func result() {
 	info := &Proto.Info{Uid: uid}
-	client.Result(context.Background(), info)
+	details, err := client.Result(context.Background(), info)
+	if err != nil {
+
+	}
+	log.Printf("%s has bid %d on %s with id %d. %d seconds left.", details.User, details.Amount, details.Name, details.Id, details.Timeleft)
 }
 
 func help() {

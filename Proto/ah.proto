@@ -29,9 +29,8 @@ message Info {
 }
 
 message Details {
-    int64 id = 1;
-    string name = 2;
-    int64 timeleft = 3;
-    int64 amount = 4;
-    string user = 5;
+    string name = 1;
+    int64 timeleft = 2;
+    int64 amount = 3;
+    string user = 4;
 }

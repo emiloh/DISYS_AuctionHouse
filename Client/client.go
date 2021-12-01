@@ -23,8 +23,6 @@ func main() {
 	io = bufio.NewReader(os.Stdin)
 	welcome()
 
-	//done := make(chan int)
-
 	conn, err := grpc.Dial(dialPort, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Could not connect: %v", err)
@@ -33,8 +31,6 @@ func main() {
 	defer conn.Close()
 
 	client = Proto.NewAuctionHouseClient(conn)
-
-	//register(uid)
 
 	for {
 		text, _ := io.ReadString('\n')
@@ -48,43 +44,13 @@ func main() {
 		case "\\result":
 			result()
 		case "\\leave":
-			break
+			os.Exit(0)
 		default:
 			fmt.Println("Please use one of the commands. If you are unsure about them, type \\help.")
 		}
 	}
 
 }
-
-/*func register(id string) {
-	registerRequest := &Proto.RegisterRequest{Id: id}
-
-	stream, err := client.Register(context.Background(), registerRequest)
-
-	if err != nil {
-		log.Fatalf("Conenction failed: %v", err)
-	}
-
-	go func(str Proto.AuctionHouse_RegisterClient) {
-		for {
-			msg, msgerr := str.Recv()
-			if msgerr != nil {
-				log.Fatalf("Failed to receieve message: %v", msgerr)
-			}
-			if msg.Details != nil {
-				log.Printf("Current offer from %s on %s with id %d is %d with a remaining time of %d seconds", msg.Details.User, msg.Details.Name, msg.Details.Id, msg.Details.Amount, msg.Details.Timeleft)
-			} else if msg.DetailList != nil {
-				ids := msg.DetailList.Id
-				for i := 0; i < len(ids); i++ {
-					log.Printf("Current offer on %s with id %d is %d with a remaining time of %d seconds", msg.DetailList.Name[i], msg.DetailList.Id[i], msg.DetailList.Amount[i], msg.DetailList.Timeleft[i])
-				}
-			} else if msg.Acknowledgement != nil {
-				log.Printf("Your bid led to %d", msg.Acknowledgement.Status)
-			}
-		}
-
-	}(stream)
-}*/
 
 func bid(amount int64) {
 	offer := &Proto.Offer{
@@ -93,10 +59,12 @@ func bid(amount int64) {
 	}
 	ack, err := client.Bid(context.Background(), offer)
 	if err != nil {
-
+		log.Fatalf("Failed to bid on the auction: %v", err)
 	}
 	if ack.Response == Proto.Ack_SUCCES {
 		log.Println("Your bid was accepted.")
+	}else if ack.Response == Proto.Ack_SOLD{
+		log.Println("The auction has ended. It is not possible to bid anymore.")
 	}else {
 		log.Println("Unfortunatly, your bid was not high enough.")
 	}
@@ -106,9 +74,14 @@ func result() {
 	info := &Proto.Info{Uid: uid}
 	details, err := client.Result(context.Background(), info)
 	if err != nil {
-
+		log.Fatalf("Failed to retrieve current status of auction: %v", err)
 	}
-	log.Printf("%s has bid %d on %s with id %d. %d seconds left.", details.User, details.Amount, details.Name, details.Id, details.Timeleft)
+	if details.Timeleft == 0 {
+		log.Printf("The acution is over. %s won %s with the highest bid of %d", details.User, details.Name, details.Amount)
+	}else{
+		log.Printf("%s has bid %d on %s. %d seconds left.", details.User, details.Amount, details.Name, details.Timeleft)
+	}
+	
 }
 
 func help() {
@@ -116,7 +89,7 @@ func help() {
 	fmt.Println("											")
 	fmt.Println("Following commands are available:		")
 	fmt.Println("\\bid <AMOUNT>    (Bids 'amount' on the item)")
-	fmt.Println("\\show                 (Lists all items on the auction house)")
+	fmt.Println("\\result                 (Shows the current status of the auction)")
 	fmt.Println("\\help                 (Lists the available commands)")
 	fmt.Println("\\leave                (Leaves the auction house)")
 	fmt.Println("_______________________________________________________")

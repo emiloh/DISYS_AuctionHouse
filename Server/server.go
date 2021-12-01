@@ -14,10 +14,9 @@ import (
 )
 
 var lock sync.Mutex
-var id int64 = 0
 var name string = "Tamagotchi"
 var price int64 = 500
-var user string = ""
+var user string = "No one"
 var timeleft int64 = 120
 var sold = false
 
@@ -71,13 +70,14 @@ func (rms *RMServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.Ack, e
 }
 
 func (rms *RMServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Details, error) {
+	log.Printf("%s requested current status of the auction.", info.Uid)
 	details := &Proto.Details{
-		Id: id,
 		Name: name,
 		Timeleft: timeleft,
 		Amount: price,
 		User: user,
 	}
+	log.Printf("Responding to %s's request.", info.Uid)
 	return details, nil
 }
 

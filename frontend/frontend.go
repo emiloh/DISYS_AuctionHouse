@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"time"
@@ -68,15 +70,43 @@ func (fs *frontendServer) Bid(ctx context.Context, offer *Proto.Offer) (*Proto.A
 		}
 	}
 	if succes >= len(clients) / 2 + 1{
+		log.Printf("Bid was succesful. Passing it to %s.", offer.User)
 		return &Proto.Ack{Response: Proto.Ack_SUCCES}, nil
 	}else {
+		log.Printf("Bid was unsuccesful. Passing it to %s.", offer.User)
 		return &Proto.Ack{Response: Proto.Ack_FAIL}, nil
 	}
 	
 }
 
 func (fs *frontendServer) Result(ctx context.Context, info *Proto.Info) (*Proto.Details, error) {
-	details, err := clients[0].Result(ctx, info)
+	index := rand.Intn(len(clients)-1)
+	log.Printf("Sending %s's request to show current status on auction to RM%d", info.Uid, index)
+	var err error
+	var details *Proto.Details
+	timeout := time.After(5 * time.Second)
+	ticker := time.NewTicker(500 * time.Millisecond)
+	check:
+	for{
+		select{
+			// Reached five seconds of trying with no luck
+		case <- timeout:
+			log.Printf("RM %d is not responding. Assuming it is dead. Removing it from list over RMs", index)
+			err = errors.New("Server down")
+			break check
+		case <- ticker.C:
+			if  details != nil {
+				err = nil
+				log.Printf("Received details from RM%d. Passing it to %s", index, info.Uid)
+				break check
+			}
+			details, _ = clients[index].Result(ctx, info)
+		}
+	}
+	if err != nil {
+		details, err = clients[0].Result(ctx, info)	
+		log.Printf("Received details from RM%d. Passing it to %s", index, info.Uid)
+	}
 	return details, err
 }
 
